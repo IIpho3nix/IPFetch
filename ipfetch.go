@@ -52,13 +52,26 @@ func GetIPInfo(ip string) (*IPInfo, error) {
 	return &info, nil
 }
 
-func main() {
-	if len(os.Args) != 2 {
-		fmt.Println("Usage: ipfetch <IP address or domain>")
-		os.Exit(1)
+func getPublicIP() string {
+	resp, err := http.Get("https://api.ipify.org")
+	if err != nil {
+		return ""
 	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return ""
+	}
+	return string(body)
+}
 
-	input := os.Args[1]
+func main() {
+	var input string
+	if len(os.Args) < 2 {
+		input = getPublicIP()
+	} else {
+		input = os.Args[1]
+	}
 
 	ip := input
 	if net.ParseIP(input) == nil {
